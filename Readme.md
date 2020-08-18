@@ -25,7 +25,7 @@ print(res.status_code)           #查看网页返回的状态码
 print(res.text)                  #查看网页内容  
 ```
 
-![通过开发者工具可以找到浏览器的header信息](/home/ch/.config/Typora/typora-user-images/image-20200816154202534.png)
+
 
 ####Beautiful Soup解析网页数据
 
@@ -42,7 +42,7 @@ s = BeautifulSoup(html)
 s.find_all('p')[1]                                #获取网页中所有p标签的值，通过下标取值               
 ```
 
-![解析网页数据后得到的内容](/home/ch/.config/Typora/typora-user-images/image-20200816155755136.png)
+
 
 ### 正则
 
@@ -334,13 +334,6 @@ def update_daily():
         close_conn(conn,cursor)
 ```
 
-
-
-## flask&Ajax&echarts
-
-![image-20200818135824035](/home/ch/.config/Typora/typora-user-images/image-20200818135824035.png)
-
-详细代码：https://github.com/ch1762/cov
 
 
 
