@@ -27,7 +27,7 @@ print(res.text)                  #查看网页内容
 
 
 
-####Beautiful Soup解析网页数据
+#### Beautiful Soup解析网页数据
 
 ```python
 html = res.text
@@ -334,6 +334,7 @@ def update_daily():
         close_conn(conn,cursor)
 ```
 
+![cov](https://i.loli.net/2020/10/05/SGMA418BXj3vN7w.png)
 
 
 
