@@ -1,5 +1,7 @@
 # python 疫情可视化展示
 
+![cov](https://i.loli.net/2020/10/05/SGMA418BXj3vN7w.png)
+
 ## 爬虫&正则
 
 ### requests&Beautiful Soup
@@ -334,7 +336,7 @@ def update_daily():
         close_conn(conn,cursor)
 ```
 
-![cov](https://i.loli.net/2020/10/05/SGMA418BXj3vN7w.png)
+
 
 
 
