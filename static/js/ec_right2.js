@@ -3,7 +3,7 @@ var ec_right2 = echarts.init(document.getElementById("r2"), "dark");
 var datamessage = [];
 var option_right2 = {
 	title: {
-		text: "今日疫情热搜",
+		text: "今日微博热搜",
 		textStyle: {
 			color: 'white'
 		},

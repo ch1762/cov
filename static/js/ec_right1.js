@@ -2,7 +2,7 @@ var ec_right1 = echarts.init(document.getElementById("r1"),"dark");
 
 option_right1 = {
 	title: {
-		text: '非湖北地区城市确诊TOP5',
+		text: '全国城市确诊TOP5',
 		textStyle: {
 			color: 'white'
 		},

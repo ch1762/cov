@@ -5,7 +5,7 @@ var option_left1 = {
       	// backgroundColor: '#FFF0F5',
 
       	title: {
-      		text: '全国累计趋势',
+      		text: '疫情总体趋势',
       		// subtext: '模拟数据',
       		// x: 'center',
 			textStyle: {
