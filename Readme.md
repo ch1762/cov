@@ -1,6 +1,6 @@
 # python 疫情可视化展示
 
-![cov](https://i.loli.net/2020/10/05/SGMA418BXj3vN7w.png)
+![cov](https://i.loli.net/2021/03/04/w9UEHpsiIGdlOcY.png)
 
 ## 爬虫&正则
 
