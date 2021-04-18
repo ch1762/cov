@@ -5,7 +5,7 @@ var option_left2 = {
       	// backgroundColor: '#FFF0F5',
 
       	title: {
-      		text: '疫情新增趋势',
+      		text: '新增趋势',
       		// subtext: '模拟数据',
       		// x: 'center',
 			textStyle: {
@@ -21,8 +21,8 @@ var option_left2 = {
       		// x: 'left',
       		// y 设置垂直安放位置，默认全图顶端，可选值：'top' ¦ 'bottom' ¦ 'center' ¦ {number}（y坐标，单位px）
       		// y: 'top',
-      		data: ['新增确诊', '新增疑似'],
-			left: 'right'
+      		data: ['新增确诊', '新增疑似','新增治愈', '新增死亡'],
+			left: 'center'
       	},
 
       	//  图表距边框的距离,可选值：'百分比'¦ {number}（单位px）
@@ -118,6 +118,24 @@ var option_left2 = {
 
       		{
       			name: '新增疑似',
+      			data: [],
+      			type: 'line',
+      			// 设置折线上圆点大小
+      			smooth: true
+      		},
+      		{
+      			name: '新增治愈',
+      			data: [],
+      			type: 'line',
+      			// 设置小圆点消失
+      			// 注意：设置symbol: 'none'以后，拐点不存在了，设置拐点上显示数值无效
+      			// symbol: 'none',
+      			// 设置折线弧度，取值：0-1之间
+      			smooth: true
+      		},
+
+      		{
+      			name: '新增死亡',
       			data: [],
       			type: 'line',
       			// 设置折线上圆点大小

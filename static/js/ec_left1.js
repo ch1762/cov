@@ -5,7 +5,7 @@ var option_left1 = {
       	// backgroundColor: '#FFF0F5',
 
       	title: {
-      		text: '疫情总体趋势',
+      		text: '疫情趋势',
       		// subtext: '模拟数据',
       		// x: 'center',
 			textStyle: {
@@ -21,8 +21,8 @@ var option_left1 = {
       		// x: 'left',
       		// y 设置垂直安放位置，默认全图顶端，可选值：'top' ¦ 'bottom' ¦ 'center' ¦ {number}（y坐标，单位px）
       		// y: 'top',
-      		data: ['累计确诊', '现有疑似', '累计治愈','累计死亡'],
-			left: 'right'
+      		data: ['现存确诊'],
+			left: 'center'
       	},
 
       	//  图表距边框的距离,可选值：'百分比'¦ {number}（单位px）
@@ -106,7 +106,7 @@ var option_left1 = {
       	},
 
       	series: [{
-      			name: '累计确诊',
+      			name: '现存确诊',
       			data: [],
       			type: 'line',
       			// 设置小圆点消失
@@ -114,31 +114,7 @@ var option_left1 = {
       			// symbol: 'none',
       			// 设置折线弧度，取值：0-1之间
       			smooth: true
-      		},
-
-      		{
-      			name: '现有疑似',
-      			data: [],
-      			type: 'line',
-      			// 设置折线上圆点大小
-      			smooth: true
-      		},
-
-      		{
-      			name: '累计治愈',
-      			data: [],
-      			type: 'line',
-      			// 设置折线上圆点大小
-      			smooth: true
-      		},
-			
-			{
-				name: '累计死亡',
-				data: [],
-				type: 'line',
-				// 设置折线上圆点大小
-				smooth: true
-			}
+      		}
       	]
 
       	// color: ['#00EE00', '#FF9F7F', '#FFD700']

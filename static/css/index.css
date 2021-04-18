@@ -31,7 +31,7 @@ body {
 #c1 {
 	position: absolute;
 	width: 40%;
-	height: 30%;
+	height: 35%;
 	top: 10%;
 	left: 30%;
 	/* background: #777777; */
@@ -61,11 +61,18 @@ body {
 	position: absolute;
 	width: 40%;
 	height: 60%;
-	top: 40%;
+	top: 35%;
 	left: 30%;
 	background: #888888;
 }
-
+#c3 {
+	position: absolute;
+	width: 40%;
+	height: 5%;
+	top: 95%;
+	left: 30%;
+	background: #333
+}
 #l1 {
 	position: absolute;
 	width: 30%;

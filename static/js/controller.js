@@ -16,7 +16,7 @@ function get_c1_data() {
 		url: "/c1",
 		success: function(data) {
 			$(".num h1").eq(0).html(data.confirm)
-			$(".num h1").eq(1).html(data.suspect)
+			$(".num h1").eq(1).html(data.nowConfirm)
 			$(".num h1").eq(2).html(data.heal)
 			$(".num h1").eq(3).html(data.dead)
 		},
@@ -43,10 +43,7 @@ function get_l1_data() {
 		url:"/l1",
 		success: function(data) {
 			option_left1.xAxis.data = data.day
-			option_left1.series[0].data = data.confirm
-			option_left1.series[1].data = data.suspect
-			option_left1.series[2].data = data.heal
-			option_left1.series[3].data = data.dead
+			option_left1.series[0].data = data.nowConfirm
 			ec_left1.setOption(option_left1)
 		},
 		error: function(xhr, type, errorThrown) {
@@ -64,6 +61,8 @@ function get_l2_data() {
 			option_left2.xAxis.data = data.day
 			option_left2.series[0].data = data.confirm_add
 			option_left2.series[1].data = data.suspect_add
+			option_left2.series[2].data = data.heal_add
+			option_left2.series[3].data = data.dead_add
 			ec_left2.setOption(option_left2)
 		},
 		error: function(xhr, type, errorThrown) {

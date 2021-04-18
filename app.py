@@ -30,7 +30,8 @@ def get_time():
 @app.route('/c1')
 def get_c1_data():
     data = utils.get_c1_data()
-    return jsonify({"confirm":data[0],"suspect":data[1],"heal":data[2],"dead":data[3]})
+    return jsonify({"confirm":int(data[0]),"nowConfirm":int(data[1]),
+                    "heal":int(data[2]),"dead":int(data[3])})
 
 @app.route('/c2')
 def get_c2_data():
@@ -42,24 +43,24 @@ def get_c2_data():
 @app.route('/l1')
 def get_l1_data():
     data = utils.get_l1_data()
-    day,confirm,suspect,heal,dead = [],[],[],[],[]
-    for a,b,c,d,e in data[7:]:
+    day,nowConfirm = [],[]
+    for a,b in data[3:]:
         day.append(a.strftime("%m-%d"))
-        confirm.append(b)
-        suspect.append(c)
-        heal.append(d)
-        dead.append(e)
-    return jsonify({"day":day,"confirm":confirm,"suspect":suspect,"heal":heal,"dead":dead})
+        nowConfirm.append(b)
+    return jsonify({"day":day,"nowConfirm":nowConfirm})
 
 @app.route('/l2')
 def get_l2_data():
     data = utils.get_l2_data()
-    day,confirm_add,suspect_add = [],[],[]
-    for a,b,c in data[7:]:
+    day,confirm_add,suspect_add,heal_add,dead_add = [],[],[],[],[]
+    for a,b,c,d,e in data[6:]:
         day.append(a.strftime("%m-%d"))
         confirm_add.append(b)
         suspect_add.append(c)
-    return jsonify({"day":day,"confirm_add":confirm_add,"suspect_add":suspect_add})
+        heal_add.append(d)
+        dead_add.append(e)
+    return jsonify({"day":day,"confirm_add":confirm_add,"suspect_add":suspect_add,
+                    "heal_add":heal_add,"dead_add":dead_add})
 
 @app.route('/r1')
 def get_r1_data():
@@ -85,4 +86,4 @@ def get_r2_data():
     return jsonify({"kws": d})
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0')

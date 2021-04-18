@@ -8,7 +8,7 @@ def get_time():
 
 def get_conn():
     # 建立连接
-    conn = pymysql.connect(host="127.0.0.1", user="root", password="root", db="cov", charset="utf8")
+    conn = pymysql.connect(host="localhost", user="root", password="root", db="cov", charset="utf8")
     # c创建游标A
     cursor = conn.cursor()
     return conn, cursor
@@ -33,16 +33,10 @@ def query(sql,*args):
     close_conn(conn,cursor)
     return res
 
-def test():
-    sql = "select * from details"
-    res = query(sql)
-    return res[0]
 
 def get_c1_data():
-    sql = "select sum(confirm)," \
-          "(select suspect from history order by ds desc limit 1)," \
-          "sum(heal),sum(dead) from details " \
-          "where update_time=(select update_time from details order by update_time desc limit 1) "
+    sql = "select confirm,nowConfirm,heal,dead from history where ds=(select " \
+    "ds from history order by ds desc limit 1)"
     res = query(sql)
     return res[0]
 
@@ -55,30 +49,24 @@ def get_c2_data():
     return res
 
 def get_l1_data():
-    sql = "select ds,confirm,suspect,heal,dead from history"
+    sql = "select ds,nowConfirm from history"
     res = query(sql)
     return res
 
 def get_l2_data():
-    sql = "select ds,confirm_add,suspect_add from history"
+    sql = "select ds,confirm_add,suspect_add,heal_add,dead_add from history"
     res = query(sql)
     return res
 
 def get_r1_data():
-    sql = 'select city,confirm from ' \
-          '(select city,confirm from details ' \
-          'where update_time=(select update_time from details order by update_time desc limit 1) ' \
-          'and province not in ("湖北","北京","上海","天津","重庆") ' \
-          'union all ' \
-          'select province as city,sum(confirm) as confirm from details ' \
-          'where update_time=(select update_time from details order by update_time desc limit 1) ' \
-          'and province in ("北京","上海","天津","重庆") group by province) as a ' \
-          'order by confirm desc limit 5'
+    sql = 'select city,zero from dayinfo where day_time = ' \
+          '(select day_time from dayinfo order by day_time desc limit 1) ' \
+          'order by zero desc limit 5'
     res = query(sql)
     return res
 
 def get_r2_data():
-    sql = "select content from hotsearch order by id desc limit 20"
+    sql = "select content from hotsearch order by id desc limit 50"
     res = query(sql)
     return res
 

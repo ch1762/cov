@@ -4,7 +4,13 @@ import pymysql
 import json
 import traceback
 import requests
-from selenium.webdriver import Chrome,ChromeOptions
+import re
+from bs4 import BeautifulSoup
+import warnings
+
+warnings.catch_warnings()
+
+warnings.simplefilter("ignore")
 
 
 def get_tencent_data():
@@ -24,23 +30,25 @@ def get_tencent_data():
 
     history = {}
     for i in data_all2["chinaDayList"]:
-        ds = "2020." + i["date"]
+        ds = i["y"]+'.'+i["date"]
         tup = time.strptime(ds, "%Y.%m.%d")  # 匹配时间
         ds = time.strftime("%Y-%m-%d", tup)  # 改变时间格式
         confirm = i["confirm"]
+        nowConfirm = i["nowConfirm"]
         suspect = i["suspect"]
         heal = i["heal"]
         dead = i["dead"]
-        history[ds] = {"confirm": confirm, "suspect": suspect, "heal": heal, "dead": dead}
+        history[ds] = {"confirm": confirm,"nowConfirm": nowConfirm, "suspect": suspect, "heal": heal, "dead": dead}
     for i in data_all2["chinaDayAddList"]:
-        ds = "2020." + i["date"]
+        ds = i["y"]+'.'+i["date"]
         tup = time.strptime(ds, "%Y.%m.%d")  # 匹配时间
         ds = time.strftime("%Y-%m-%d", tup)  # 改变时间格式
-        confirm = i["confirm"]
-        suspect = i["suspect"]
-        heal = i["heal"]
-        dead = i["dead"]
-        history[ds].update({"confirm_add": confirm, "suspect_add": suspect, "heal_add": heal, "dead_add": dead})
+        confirmadd = i["confirm"]
+        suspectadd = i["suspect"]
+        healadd = i["heal"]
+        deadadd = i["dead"]
+        history[ds].update({"confirm_add": confirmadd, "suspect_add": suspectadd,
+                            "heal_add": healadd, "dead_add": deadadd})
 
     details = []
     update_time = data_all1["lastUpdateTime"]
@@ -55,7 +63,24 @@ def get_tencent_data():
             heal = city_infos["total"]["heal"]
             dead = city_infos["total"]["dead"]
             details.append([update_time, province, city, confirm, confirm_add, heal, dead])
-    return history, details
+
+    dayinfo = []
+    day_time = data_all1["lastUpdateTime"]
+    data_key = data_all2['provinceCompare'].keys()
+    data_key = list(data_key)
+    data_value = data_all2['provinceCompare'].values()
+    data_value = list(data_value)
+    for i in range(len(data_key)):
+        city = data_key[i]
+        now_confirm = data_value[i]['nowConfirm']
+        confirm_add = data_value[i]['confirmAdd']
+        heal = data_value[i]['heal']
+        dead = data_value[i]['dead']
+        zero = data_value[i]['zero']
+        dayinfo.append([day_time, city, now_confirm, confirm_add, heal, dead, zero])
+
+
+    return history, details,dayinfo
 
 
 
@@ -63,7 +88,7 @@ def get_tencent_data():
 
 def get_conn():
     # 建立连接
-    conn = pymysql.connect(host="###", user="###", password="###", db="cov", charset="utf8")
+    conn = pymysql.connect(host="localhost", user="root", password="root", db="cov", charset="utf8")
     # c创建游标
     cursor = conn.cursor()
     return conn, cursor
@@ -88,13 +113,37 @@ def update_details():
         #对比当前最大时间戳
         cursor.execute(sql_query,li[0][0])
         if not cursor.fetchone()[0]:
-            print(f"{time.asctime()}开始更新数据")
+            print(f"{time.asctime()}开始更新details数据")
             for item in li:
                 cursor.execute(sql,item)
             conn.commit()
-            print(f"{time.asctime()}更新到最新数据")
+            print(f"{time.asctime()}details更新到最新数据")
         else:
-            print(f"{time.asctime()}已是最新数据！")
+            print(f"{time.asctime()}details已是最新数据！")
+    except:
+        traceback.print_exc()
+    finally:
+        close_conn(conn,cursor)
+
+
+def update_dayinfo():
+    cursor = None
+    conn = None
+    try:
+        li = get_tencent_data()[2]#1代表最新数据
+        conn,cursor = get_conn()
+        sql = "insert into dayinfo(day_time,city,now_confirm,confirm_add,heal,dead,zero) values(%s,%s,%s,%s,%s,%s,%s)"
+        sql_query = 'select %s=(select day_time from dayinfo order by id desc limit 1)'
+        #对比当前最大时间戳
+        cursor.execute(sql_query,li[0][0])
+        if not cursor.fetchone()[0]:
+            print(f"{time.asctime()}开始更新dayinfo数据")
+            for item in li:
+                cursor.execute(sql,item)
+            conn.commit()
+            print(f"{time.asctime()}dayinfo更新到最新数据")
+        else:
+            print(f"{time.asctime()}dayinfo已是最新数据！")
     except:
         traceback.print_exc()
     finally:
@@ -107,15 +156,15 @@ def insert_history():
     conn = None
     try:
         dic = get_tencent_data()[0]#0代表历史数据字典
-        print(f"{time.asctime()}开始插入历史数据")
+        print(f"{time.asctime()}开始插入history数据")
         conn,cursor = get_conn()
-        sql = "insert into history values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+        sql = 'insert into history values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
         for k,v in dic.items():
-            cursor.execute(sql,[k, v.get("confirm"),v.get("confirm_add"),v.get("suspect"),
-                           v.get("suspect_add"),v.get("heal"),v.get("heal_add"),
-                           v.get("dead"),v.get("dead_add")])
+            cursor.execute(sql,[k,v.get('confirm'),v.get('confirm_add'),v.get('nowConfirm'),
+                                v.get('suspect'),v.get('suspect_add'),v.get('heal'),
+                                v.get('heal_add'),v.get('dead'),v.get('dead_add')])
         conn.commit()
-        print(f"{time.asctime()}插入历史数据完毕")
+        print(f"{time.asctime()}插入history数据完毕")
     except:
         traceback.print_exc()
     finally:
@@ -128,17 +177,17 @@ def update_history():
     conn = None
     try:
         dic = get_tencent_data()[0]#0代表历史数据字典
-        print(f"{time.asctime()}开始更新历史数据")
+        print(f"{time.asctime()}开始更新history数据")
         conn,cursor = get_conn()
-        sql = "insert into history values (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-        sql_query = "select confirm from history where ds=%s"
+        sql = 'insert into history values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+        sql_query = 'select confirm from history where ds=%s'
         for k,v in dic.items():
             if not cursor.execute(sql_query,k):
-                cursor.execute(sql,[k, v.get("confirm"),v.get("confirm_add"),v.get("suspect"),
-                               v.get("suspect_add"),v.get("heal"),v.get("heal_add"),
-                               v.get("dead"),v.get("dead_add")])
+                cursor.execute(sql, [k, v.get('confirm'), v.get('confirm_add'), v.get('nowConfirm'),
+                                     v.get('suspect'), v.get('suspect_add'), v.get('heal'),
+                                     v.get('heal_add'), v.get('dead'), v.get('dead_add')])
         conn.commit()
-        print(f"{time.asctime()}历史数据更新完毕")
+        print(f"{time.asctime()}history数据更新完毕")
     except:
         traceback.print_exc()
     finally:
@@ -146,60 +195,40 @@ def update_history():
 
 
 #爬取百度热搜数据
-def get_baidu_hot():
-    option = ChromeOptions()
-    option.add_argument("--headless")#隐藏游览器
-    option.add_argument("--no--sandbox")
-    browser =  Chrome(options = option,executable_path="chromedriver-dev.exe")
-
-    url = "https://voice.baidu.com/act/virussearch/virussearch?from=osari_map&tab=0&infomore=1"
-    browser.get(url)
-    #print(brower.page_source)
-    but = browser.find_element_by_css_selector('#ptab-0 > div > div.VirusHot_1-5-3_32AY4F.VirusHot_1-5-3_2RnRvg > section > div')
-    #点击加载更多
-    but.click()
-    time.sleep(1)
-    #爬虫与反爬，模拟人等待1秒
-    c = browser.find_elements_by_xpath('//*[@id="ptab-0"]/div/div[2]/section/a/div/span[2]')
-    context = [i.text for i in c]
-    browser.close()
-    return context
+def get_sina_hot():
+    url = 'https://s.weibo.com/top/summary?cate=realtimehot'
+    res = requests.get(url)
+    html = res.text
+    r = BeautifulSoup(html)
+    s = r.find_all('a', attrs={'target': '_blank'})
+    result = []
+    for i in range(len(s) - 10):
+        pattern = '>(.*)</a>'
+        text = re.search(pattern, str(s[i]))
+        result.append(text.group(1) + str(50 - i))
+    return result
 
 
 def update_hotsearch():
     cursor = None
     conn = None
     try:
-        context = get_baidu_hot()
-        print(f"{time.asctime()}开始更新数据")
+        context = get_sina_hot()
+        print(f"{time.asctime()}开始更新hotsearch数据")
         conn,cursor = get_conn()
         sql = "insert into hotsearch(dt,content) values(%s,%s)"
         ts = time.strftime("%Y-%m-%d %X")
         for i in context:
             cursor.execute(sql,(ts,i))
         conn.commit()
-        print(f"{time.asctime()}数据更新完毕")
+        print(f"{time.asctime()}hotsearch数据更新完毕")
     except:
         traceback.print_exc()
     finally:
         close_conn(conn,cursor)
 
 if __name__ == "__main__":
-    l = len(sys.argv)
-    if l == 1:
-        s = """
-        请输入参数
-        参数说明，
-        up_his 更新历史记录表
-        up_hot 更新实时热搜
-        up_det 更新详细表
-        """
-        print(s)
-    else:
-        order = sys.argv[1]
-        if order == "up_his":
-            update_history()
-        elif order == "up_det":
-            update_details()
-        elif order == "up_hot":
-            update_hotsearch()
+        update_history()
+        update_details()
+        update_dayinfo()
+        update_hotsearch()

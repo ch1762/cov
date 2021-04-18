@@ -1,78 +1,8 @@
 # python 疫情可视化展示
 
-![cov](https://i.loli.net/2021/03/04/w9UEHpsiIGdlOcY.png)
+##项目已上线，详见8.140.27.208！
 
-## 爬虫&正则
-
-### requests&Beautiful Soup
-
-#### requests爬取网页(练手)
-
-```python
-import requests
-
-url = 'http://wsjkw.sc.gov.cn/scwsjkw/gzbd/fyzt.shtml'  #爬取网页的ＵＲＬ
-res = requests.get(url)          
-'''
-有些网页采用了一些反爬措施，使用上述代码爬取网页可能会返回403的状态码
-可以通过设置header绕过
-header格式　header = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36'}
-此时　res = requests.get(url,headers=header) 
-'''
-print(res.encoding)              #查看网页编码格式
-res.encoding = 'utf-8'           #网页编码格式设置为utf8
-print(res.headers)               #查看网页头信息
-print(res.url)                   #查看网页返回的地址
-print(res.status_code)           #查看网页返回的状态码    
-print(res.text)                  #查看网页内容  
-```
-
-
-
-#### Beautiful Soup解析网页数据
-
-```python
-html = res.text
-soup = BeautifulSoup(html)                       #使用BeautifulSoup解析网页内容            
-g_url = soup.find('a').attrs['href']             #获取网页中第一个a标签中href属性的值 
-#结果为(/scwsjkw/gzbd01/2020/8/16/2ad3f5e305ee4d1c8bbd56cef4bbaa84.shtml)    
-new_url = 'http://wsjkw.sc.gov.cn/'　+　g_url     #拼接网址，得到需求数据的地址          
-res = requests.get(new_url)                             
-res.encoding = 'utf-8'                                 
-html = res.text                                          
-s = BeautifulSoup(html)                                   
-s.find_all('p')[1]                                #获取网页中所有p标签的值，通过下标取值               
-```
-
-
-
-### 正则
-
-#### re
-
-`正则表达式速查表:https://www.jb51.net/tools/regexsc.htm`
-
-==re.search(regex,str)==       
-
-```python
-import re
-
-html = s.find_all('p')[1].text                        
-confirm_add_patten = "新增(.*?)确诊病例(\d+)"           #设置正则式  ()内的为需要返回的内容，若不加括号则表示即使符合正则也不会返回
-#"新增(.*?)确诊病例(\d+)"       返回 新型冠状病毒肺炎 和 1 
-#"新增.*?确诊病例(\d+)"         返回　1   
-confirm_add = re.search(confirm_add_patten,html)      #正则匹配  若匹配不到返回None,匹配到则返回一个元组
-print(confirm_add.groups())                           #显示匹配到的内容     
-print(confirm_add.group(0))                           #显示匹配到的所有文本内容        
-print(confirm_add.group(1))                           #显示匹配到的第一个内容      
-print(confirm_add.group(2))                           #显示匹配到的第二个内容     
-'''
-新增新型冠状病毒肺炎确诊病例1
-('新型冠状病毒肺炎', '1')
-新型冠状病毒肺炎
-1
-'''
-```
+![fb6db3443afa8a6924b43e1e302e3cf](https://i.loli.net/2021/04/18/GhZCXdkNszp7x2i.png)
 
 ## 数据搜集
 
