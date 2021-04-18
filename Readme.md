@@ -1,6 +1,6 @@
 # python 疫情可视化展示
 
-##项目已上线，详见8.140.27.208！
+## 项目已上线，详见8.140.27.208！
 
 ![fb6db3443afa8a6924b43e1e302e3cf](https://i.loli.net/2021/04/18/GhZCXdkNszp7x2i.png)
 
