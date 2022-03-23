@@ -194,18 +194,28 @@ def update_history():
         close_conn(conn,cursor)
 
 
-#爬取百度热搜数据
+#爬取新浪热搜数据
 def get_sina_hot():
-    url = 'https://s.weibo.com/top/summary?cate=realtimehot'
-    res = requests.get(url)
-    html = res.text
-    r = BeautifulSoup(html)
-    s = r.find_all('a', attrs={'target': '_blank'})
+    from selenium.webdriver import Chrome, ChromeOptions
+    import time
+
+    option = ChromeOptions()
+    option.add_argument('--headless')
+    option.add_argument('--no-sandbox')
+
     result = []
-    for i in range(len(s) - 10):
-        pattern = '>(.*)</a>'
-        text = re.search(pattern, str(s[i]))
-        result.append(text.group(1) + str(50 - i))
+    url = 'https://s.weibo.com/top/summary?cate=realtimehot'
+    browser = Chrome(options=option)
+    browser.get(url)
+    time.sleep(10)
+    content = browser.find_elements_by_xpath('//*[@id="pl_top_realtimehot"]/table/tbody/tr/td[2]/a')
+    count = 51
+
+    for i in range(51):
+        cont = content[i].text
+        num = str(count - i)
+        result.append(cont + num)
+        #print(content[i].text)
     return result
 
 

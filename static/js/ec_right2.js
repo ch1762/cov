@@ -7,15 +7,15 @@ var option_right2 = {
 		textStyle: {
 			color: 'white'
 		},
-		left: 'left'
+		left: 'center'
 	},
 	tooltip: {
 		show: false
 	},
 	series: [{
 		type: 'wordCloud',
-		gridSize: 1,
-		sizeRange: [12, 55], //文字范围
+		gridSize: 10,
+		sizeRange: [10, 60], //文字范围
 		//文本旋转范围，文本将通过rotationStep45在[-90,90]范围内随机旋转
 		rotationRange: [-45, 0, 45, 90],
 		// rotationStep: 45,
@@ -37,8 +37,7 @@ var option_right2 = {
 				}
 			}
 		},
-		right: null,
-		bottom: null,
+
 		data: datamessage
 	}]
 };

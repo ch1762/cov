@@ -6,265 +6,122 @@
 
 ## 数据搜集
 
-### 爬取腾讯数据
+### 爬取腾讯疫情数据
 
 ```python
-import datetime
-import json
-import requests
-from bs4 import BeautifulSoup
-import time
-### 封装函数 返回各省市疫情情况
-def get_data():
-    today = str(datetime.date.today())
-    
-    url = 'https://view.inews.qq.com/g2/getOnsInfo?name=disease_other'
-    res = requests.get(url)
-    d = json.loads(res.text)
-    data = json.loads(d['data'])
-    province = data['provinceCompare']
-    
-    list1 = []
-    for pro in province.keys():
-        list1.append(pro)
+def get_tencent_data():
+    url1 = "https://view.inews.qq.com/g2/getOnsInfo?name=disease_h5"
+    url2 = "https://view.inews.qq.com/g2/getOnsInfo?name=disease_other"
+    headers = {
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36"
+    }
+    r1 = requests.get(url1, headers)
+    r2 = requests.get(url2, headers)
 
-    nowl = []
-    for pro in province.values():
-        nowl.append(pro['nowConfirm'])
-        
-    addl = []
-    for pro in province.values():
-        addl.append(pro['confirmAdd'])
+    res1 = json.loads(r1.text)
+    res2 = json.loads(r2.text)
 
-    deadl = []
-    for pro in province.values():
-        deadl.append(pro['dead'])
-
-    heall = []
-    for pro in province.values():
-        heall.append(pro['heal'])
-
-    zerol = []
-    for pro in province.values():
-        zerol.append(pro['zero'])
+    data_all1 = json.loads(res1["data"])
+    data_all2 = json.loads(res2["data"])
 
     history = {}
-    for d in data['chinaDayList']:
-        tt = '2020.'+d['date']
-        temp = time.strptime(tt,'%Y.%m.%d')
-        tm = time.strftime('%Y-%m-%d',temp)
-        confirm = d['confirm']#累计确诊
-        dead = d['dead']#累计死亡
-        heal = d['heal']#累计治愈
-        suspect = d['suspect']#累计治愈
-        nowConfirm = d['nowConfirm']#现存确诊
-        history[tm] = {'confirm':confirm,'suspect':suspect,'heal':heal,'dead':dead,'nowConfirm':nowConfirm}
-    for d in data['chinaDayAddList']:
-        tt = '2020.'+d['date']
-        temp = time.strptime(tt,'%Y.%m.%d')
-        tm = time.strftime('%Y-%m-%d',temp)
-        confirm = d['confirm']#新增确诊
-        suspect = d['suspect']#新增疑似
-        dead = d['dead']#新增死亡
-        heal = d['heal']#新增治愈
-        
-    history[tm].update({'confirm_add':confirm,'suspect_add':suspect,'heal_add':heal,'dead_add':dead,'heal_add':heal})
+    for i in data_all2["chinaDayList"]:
+        ds = i["y"]+'.'+i["date"]
+        tup = time.strptime(ds, "%Y.%m.%d")  # 匹配时间
+        ds = time.strftime("%Y-%m-%d", tup)  # 改变时间格式
+        confirm = i["confirm"]
+        nowConfirm = i["nowConfirm"]
+        suspect = i["suspect"]
+        heal = i["heal"]
+        dead = i["dead"]
+        history[ds] = {"confirm": confirm,"nowConfirm": nowConfirm, "suspect": suspect, "heal": heal, "dead": dead}
+    for i in data_all2["chinaDayAddList"]:
+        ds = i["y"]+'.'+i["date"]
+        tup = time.strptime(ds, "%Y.%m.%d")  # 匹配时间
+        ds = time.strftime("%Y-%m-%d", tup)  # 改变时间格式
+        confirmadd = i["confirm"]
+        suspectadd = i["suspect"]
+        healadd = i["heal"]
+        deadadd = i["dead"]
+        history[ds].update({"confirm_add": confirmadd, "suspect_add": suspectadd,
+                            "heal_add": healadd, "dead_add": deadadd})
+
     details = []
-    for i in range(34):
-        details.append([today,list1[i],nowl[i],addl[i],heall[i],deadl[i],zerol[i]])
-    return history,details
-```
+    update_time = data_all1["lastUpdateTime"]
+    data_country = data_all1["areaTree"]
+    data_province = data_country[0]["children"]
+    for pro_infos in data_province:
+        province = pro_infos["name"]
+        for city_infos in pro_infos["children"]:
+            city = city_infos["name"]
+            confirm = city_infos["total"]["confirm"]
+            confirm_add = city_infos["today"]["confirm"]
+            heal = city_infos["total"]["heal"]
+            dead = city_infos["total"]["dead"]
+            details.append([update_time, province, city, confirm, confirm_add, heal, dead])
+
+    dayinfo = []
+    day_time = data_all1["lastUpdateTime"]
+    data_key = data_all2['provinceCompare'].keys()
+    data_key = list(data_key)
+    data_value = data_all2['provinceCompare'].values()
+    data_value = list(data_value)
+    for i in range(len(data_key)):
+        city = data_key[i]
+        now_confirm = data_value[i]['nowConfirm']
+        confirm_add = data_value[i]['confirmAdd']
+        heal = data_value[i]['heal']
+        dead = data_value[i]['dead']
+        zero = data_value[i]['zero']
+        dayinfo.append([day_time, city, now_confirm, confirm_add, heal, dead, zero])
 
 
-
-###导入数据库
-
-```python
-import traceback
-import pymysql
-import datetime
-import json
-import requests
-from bs4 import BeautifulSoup
-import time
-
-def get_conn():
-    conn = pymysql.connect(host = '127.0.0.1',
-                  user = 'root',
-                  password ='root',
-                  db = 'ch')
-    cursor = conn.cursor()
-    return conn,cursor
-def close_conn(conn,cursor):
-    if cursor:
-        cursor.close()
-    if conn:
-        conn.close()
-        
-def insert_history():
-    '''
-    插入history表
-    '''
-    cursor = None
-    conn = None
-    try:
-        dic = get_data()[0]
-        print(f'{datetime.datetime.now()} 开始插入历史数据')
-        conn,cursor = get_conn()
-        sql = 'insert into history values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
-        for k,v in dic.items():
-            cursor.execute(sql,[k,v.get('confirm'),v.get('suspect'),v.get('heal'),
-                                v.get('dead'),v.get('nowConfirm'),v.get('confirm_add'),
-                                v.get('suspect_add'),v.get('heal_add'),v.get('dead_add')])
-        conn.commit()
-        print(f'{datetime.datetime.now()} 历史数据插入完毕')
-    except:
-        traceback.print_exc()
-    finally:
-        close_conn(conn,cursor)
-        
-def update_history():
-    '''
-    更新history表
-    '''
-    cursor = None
-    conn = None
-    try:
-        dic = get_data()[0]
-        print(f'{datetime.datetime.now()} 开始更新历史数据')
-        conn,cursor = get_conn()
-        sql = 'insert into history values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
-        sql_query = 'select confirm from history where dt=%s'
-        for k,v in dic.items():
-            if not cursor.execute(sql_query,k):
-                cursor.execute(sql,[k,v.get('confirm'),v.get('suspect'),v.get('heal'),
-                                    v.get('dead'),v.get('nowConfirm'),v.get('confirm_add'),
-                                    v.get('suspect_add'),v.get('heal_add'),v.get('dead_add')])
-        conn.commit()
-        print(f'{datetime.datetime.now()} 历史数据更新完毕')
-    except:
-        traceback.print_exc()
-    finally:
-        close_conn(conn,cursor)
-        
-def update_details():
-    '''
-    更新details表
-    '''
-    cursor = None
-    conn = None
-    try:
-        li = get_data()[1]
-        conn,cursor = get_conn()
-        sql = 'insert into details(update_time,province,now_confirm,confirm_add,heal_add,dead_add,zero_days) values(%s,%s,%s,%s,%s,%s,%s)'
-        sql_query = 'select %s=(select update_time from details order by id desc limit 1)'
-        cursor.execute(sql_query,li[0][0])
-        if not cursor.fetchone()[0]:
-            print(f'{datetime.datetime.now()} 开始更新数据')
-            for item in li:
-                cursor.execute(sql,item)
-            conn.commit()
-            print(f'{datetime.datetime.now()} 更新最新数据完毕')
-        else:
-            print(f'{datetime.datetime.now()} 已经是最新数据')
-    except:
-        traceback.print_exc()
-    finally:
-        close_conn(conn,cursor)
+    return history, details,dayinfo
 ```
 
 ### 爬取新浪热搜数据
 
 ```python
-def get_hotsearch():
-    url = 'https://s.weibo.com/top/summary?cate=realtimehot'
-    res = requests.get(url)
-    html = res.text
-    r = BeautifulSoup(html)
-    s = r.find_all('a',attrs={'target':'_blank'})
-    result = []
-    for i in range(1,len(s)-10):
-        pattern = '>(.*)</a>'
-        text = re.search(pattern,str(s[i]))
-        result.append(text.group(1)+str(50-i))
-    return result
-```
+#爬取新浪热搜数据
+def get_sina_hot():
+    from selenium.webdriver import Chrome, ChromeOptions
+    import time
 
-### 导入数据库
-
-```python
-import traceback
-import pymysql
-import datetime
-import json
-import requests
-from bs4 import BeautifulSoup
-import time
-
-def update_hotsearch():
-    cursor = None
-    conn = None
-    try:
-        context = get_hotsearch()
-        print(f'{datetime.datetime.now()} 开始更新热搜数据')
-        conn,cursor = get_conn()
-        sql = 'insert into hotsearch(dt,content) values(%s,%s)'
-        ts = time.strftime('%Y-%m-%d %X')
-        for i in context:
-            cursor.execute(sql,(ts,i))
-        conn.commit()
-        print(f'{datetime.datetime.now()} 数据更新完毕')
-    except:
-        traceback.print_exc()
-    finally:
-        close_conn(conn,cursor)
-```
-
-### 爬取网易当日疫情数据
-
-```python
-def get_daily():
-    url = 'https://wp.m.163.com/163/page/news/virus_report/index.html?_nw_=1&_anw_=1'
     option = ChromeOptions()
     option.add_argument('--headless')
     option.add_argument('--no-sandbox')
+
+    result = []
+    url = 'https://s.weibo.com/top/summary?cate=realtimehot'
     browser = Chrome(options=option)
     browser.get(url)
-    c = browser.find_elements_by_class_name('number')
-    daily_data = []
-    tm = time.strftime('%Y-%m-%d')
-    daily_data.append(tm)
-    for i in range(2,6):
-        daily_data.append(c[i].text)
-    return daily_data
+    time.sleep(10)
+    content = browser.find_elements_by_xpath('//*[@id="pl_top_realtimehot"]/table/tbody/tr/td[2]/a')
+    count = 51
+
+    for i in range(51):
+        cont = content[i].text
+        num = str(count - i)
+        result.append(cont + num)
+        #print(content[i].text)
+    return result
 ```
 
-### 导入数据库
+#### ==详细代码见spider.py文件==
 
-```python
-import time
-import datetime
-import traceback
-from selenium.webdriver import Chrome,ChromeOptions
-import pymysql
+### 项目代码介绍
 
+static文件夹和template文件夹中存放项目的前端代码，主要使用了jquery和echarts技术进行前端展示。
 
-def update_daily():
-    cursor = None
-    conn = None
-    try:
-        context = get_daily()
-        print(f'{datetime.datetime.now()} 开始更新当日数据')
-        conn,cursor = get_conn()
-        sql = 'insert into daily_data(time,now_confirm,confirm,dead,heal) values(%s,%s,%s,%s,%s)'
-        cursor.execute(sql,[context[0],context[1],context[2],context[3],context[4]])
-        conn.commit()
-        print(f'{datetime.datetime.now()} 数据更新完毕')
-    except:
-        traceback.print_exc()
-    finally:
-        close_conn(conn,cursor)
-```
+### 如何使用该项目
+
+**首先安装相关依赖库，详见requirements.txt**
+
+**之后更改spider.py文件中的get_conn函数，修改为自己的数据库参数，新建cov数据库并将cov.sql导入到cov数据库中**
+
+**cov.sql文件新建了四个表，分别为dayinfo，details，history，hotsearch**
+
+**之后运行spider.py文件爬取数据并导入数据库，最后运行app.py启动项目。**
 
 
 
