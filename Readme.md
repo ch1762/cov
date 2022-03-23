@@ -1,6 +1,6 @@
 # python 疫情可视化展示
 
-## 项目已上线，详见http://60.205.169.29/ ！（又下线了！T。T）
+## 项目已上线，详见http://60.205.169.29/ ！（又下线了！T.T）
 
 ![fb6db3443afa8a6924b43e1e302e3cf](https://i.loli.net/2021/04/18/GhZCXdkNszp7x2i.png)
 
