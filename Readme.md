@@ -107,7 +107,7 @@ def get_sina_hot():
     return result
 ```
 
-#### ==详细代码见spider.py文件==
+#### ==爬取数据以及将数据导入数据库的详细代码见spider.py文件==
 
 
 
