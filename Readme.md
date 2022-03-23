@@ -109,11 +109,9 @@ def get_sina_hot():
 
 #### ==详细代码见spider.py文件==
 
-### 项目代码介绍
 
-static文件夹和template文件夹中存放项目的前端代码，主要使用了jquery和echarts技术进行前端展示。
 
-### 如何使用该项目
+# 如何使用该项目
 
 **首先安装相关依赖库，详见requirements.txt**
 
